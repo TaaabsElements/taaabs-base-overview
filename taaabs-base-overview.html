@@ -152,12 +152,14 @@
         */
 		    i18n: {
             type: Object,
-            value: {
-                "title":{
-                    "default":"Pick a project",
-                    "en":"Pick a project",
-                    "fr":"Selectionnez votre projet"
-                }
+            value: function(){
+              return {
+                  "title":{
+                      "default":"Pick a project",
+                      "en":"Pick a project",
+                      "fr":"Selectionnez votre projet"
+                  }
+              }
             },
             notify: true
         },

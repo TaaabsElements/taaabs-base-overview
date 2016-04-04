@@ -1,0 +1,28 @@
+{
+  "name": "taaabs-base-overview",
+  "version": "1.0.0",
+  "description": "A graphical element that simplify file reading.",
+  "keywords": [
+    "web-components",
+    "polymer",
+    "taaabs"
+  ],
+  "authors": [
+    "Rémi Casado"
+  ],
+  "repository": {
+   "type": "git",
+   "url": "https://github.com/TaaabsElements/taaabs-base-overview.git"
+  },
+  "main": "taaabs-base-overview.html",
+  "license": "https://github.com/TaaabsElements/taaabs-base-overview/LICENSE",
+  "dependencies": {
+    "polymer": "polymer/polymer#^1.0.0",
+    "samotracesjs": "https://github.com/Yepikae/samotraces.js.git#0.21.0"
+  },
+  "devDependencies": {
+    "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "ignore": []
+}

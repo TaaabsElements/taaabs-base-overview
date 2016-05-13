@@ -1,11 +1,10 @@
-<!-- CSS STYLE, We may find another way to do this -->
-<!-- <link rel="import" href="../taaabs-themes/taaabs-dark-theme.html"> -->
+<link rel="import" href="../taaabs-themes/taaabs-dark-theme.html">
 
 <dom-module id="taaabs-base-overview">
   <template>
   <!-- include the style module by name -->
   <!-- <style include="taaabs-dark-theme"></style> -->
-
+  <style include="taaabs-dark-theme"></style>
   <style>
     :host {
       display: block;
@@ -50,7 +49,7 @@
     <center>
       <h2> <span> {{i18n.title.default}} </span> </h2>
     </center>
-    <table style="width:100%">
+    <table class="table" style="width:100%">
       <thead>
         <tr>
           <th> ID </th><th> Label </th><th> Notes </th>
@@ -142,6 +141,14 @@
           }
         },
 
+
+        tmpBase: {
+          type: Object,
+          notify: true,
+          value: null,
+          observer: '_tmpBaseLoaded'
+        },
+
         /**
         * Localization object.
         *
@@ -216,19 +223,8 @@
                 that._ktbs.iter_bases()
                           .forEach( function( base ){
 
-                              // We get the short ID of each base.
-                              base.idName = base.id.split('/');
-                              base.idName = base.idName[ base.idName.length - 2 ];
+                            that.fire('GET_RESOURCE', {url:base.uri, obj:"tmpBase"});
 
-                              // We load each base to retrieve it's label and note.
-                              base.load()
-                                .then(function(){
-                                  base.note = base['http://www.w3.org/2004/02/skos/core#note'];
-                                  that.push('bases',base);
-                                })
-                                .catch( function(err){
-
-                                })
                           })
                           .then( function(){
 
@@ -240,6 +236,18 @@
               .catch( function(err){
                 console.log(err);
               })
+        }
+
+      },
+
+      _tmpBaseLoaded: function(){
+        if( this.tmpBase ){
+          this.tmpBase.idName = this.tmpBase.id.split('/');
+          this.tmpBase.idName = this.tmpBase.idName[ this.tmpBase.idName.length - 2 ];
+
+          this.tmpBase.note = this.tmpBase['http://www.w3.org/2004/02/skos/core#note'];
+
+          this.push('bases', JSON.parse(JSON.stringify(this.tmpBase)) );
         }
 
       },
@@ -257,7 +265,8 @@
         while(tr.localName !== 'tr')
           tr = tr.parentNode;
 
-        this.fire('baseSelected',{"baseId":tr.id,"which":e.which});
+        var baseUrl = tr.id;
+        this.fire('baseSelected',{"baseId":baseUrl,"which":e.which});
 
       },
 

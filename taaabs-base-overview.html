@@ -2,85 +2,57 @@
 
 <dom-module id="taaabs-base-overview">
   <template>
-  <!-- include the style module by name -->
-  <!-- <style include="taaabs-dark-theme"></style> -->
-  <style include="taaabs-dark-theme"></style>
-  <style>
-    :host {
-      display: block;
-    }
+    <!-- include the style module by name -->
+    <!-- <style include="taaabs-dark-theme"></style> -->
+    <style include="taaabs-dark-theme"></style>
+    <style>
+      :host {
+        display: block;
+      }
 
-    .viewBtn {
-      margin: 0 auto;
-      border-radius: 100%;
-      height: 10px;
-      width: 10px;
-      background-color: lawngreen;
-      opacity: 0.6;
-    }
+      :host table td {
+        padding-top: 10px;
+        padding-bottom: 10px;
+      }
 
-    .viewBtn:hover {
-      box-shadow: 0 0 0.2em grey;
-    }
+      th {
+        text-align: left;
+      }
+    </style>
 
-    .baseLine{
-      cursor:pointer;
-    }
-
-    .baseLine > td{
-       border-top: solid 1px grey;
-       padding: 10px;
-       padding-left: 0px;
-    }
-
-    .baseLine:hover{
-      background-color: #2e3842;
-      color: white;
-    }
-
-    th{
-     text-align: left;
-    }
-
-  </style>
-
-  <div>
-
-    <center>
-      <h2> <span> {{i18n.title.default}} </span> </h2>
-    </center>
-    <table class="table" style="width:100%">
-      <thead>
-        <tr>
-          <th> ID </th><th> Label </th><th> Notes </th>
-        </tr>
-      </thead>
-      <tbody>
-        <template is="dom-repeat" items="{{bases}}" sort="_sort">
-          <tr id="{{item.id}}" on-click="_baseClicked" class="baseLine">
-            <td> <span>{{item.idName}}</span> </td>
-            <td> <span>{{item.label}}</span> </td>
-            <td> <span>{{item.note}}</span> </td>
+    <div>
+      <table class="table" style="width:100%">
+        <thead>
+          <tr>
+            <th> [[localize('id')]] </th>
+            <th> [[localize('label')]] </th>
+            <th> [[localize('notes')]] </th>
           </tr>
-        </template>
-      </tbody>
-    </table>
-
-  </div>
+        </thead>
+        <tbody>
+          <template is="dom-repeat" items="[[_bases]]" sort="_sort">
+            <tr on-click="_baseClicked" class="clickable">
+              <td> <span>[[item.idName]]</span> </td>
+              <td> <span>[[item.label]]</span> </td>
+              <td> <span>[[item.comment]]</span> </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
   </template>
 
   <script>
-
     /**
-    * `<taaabs-base-overview>` is a graphical element that load and display each base of a ktbs.
-    *
-    * Example:
-    *
-    *     <taaabs-base-overview ktbs-url="https://localhost:3000/ktbs/" language="{{i18n}}">
-    *     </taaabs-base-overview>
-    *
-    * Source files: <a href="https://github.com/TaaabsElements/taaabs-base-overview" target="_blank">taaabs-base-overview</a>
-    */
+     * `<taaabs-base-overview>` is a graphical element that load and display each base of a ktbs.
+     *
+     * Example:
+     *
+     *     <taaabs-base-overview ktbs-url="https://localhost:3000/ktbs/" language="{{i18n}}">
+     *     </taaabs-base-overview>
+     *
+     * Source files: <a href="https://github.com/TaaabsElements/taaabs-base-overview" target="_blank">taaabs-base-overview</a>
+     */
     Polymer({
       is: 'taaabs-base-overview',
 
@@ -96,185 +68,229 @@
        *
        * If mouse_button = 2, then it's a middle-click
        *
-       * @event baseSelected
+       * @event BASE_SELECTED
        */
 
       properties: {
         /**
-        * Url of the current kTBS.
-        *
-        * @attribute ktbsUrl
-        * @type String
-        */
+         * Url of the current kTBS.
+         *
+         * @attribute ktbsUrl
+         * @type String
+         */
         ktbsUrl: {
           type: String,
           notify: true,
-          value: "",
           observer: "_ktbsUrlChanged"
         },
 
         /**
-        * A Samotrace.kTBS object.
-        *
-        * @attribute _ktbs
-        * @type Object
-        */
-        _ktbs: {
-          type: Object,
+         * Set to true if the taaabs-base-overview must work with a `taaabs-resource-loader`. False otherwise.
+         *
+         * @attribute taaabsCentralLoading
+         * @type Boolean
+         */
+        taaabsCentralLoading: {
+          type: Boolean,
           notify: true,
-          value: function(){
-            return {};
-         }
+          value: false
         },
 
         /**
-        * The different existing bases on the ktbs.
-        *
-        * @attribute bases
-        * @type Array
-        */
-        bases: {
+         * Internationalization.
+         * fr, en.
+         *
+         * @attribute language
+         * @type String
+         */
+        language: {
+          type: String,
+          notify: true
+        },
+
+        /**
+         * A Samotrace.kTBS object.
+         *
+         * @attribute _ktbs
+         * @type Object
+         */
+        _ktbs: {
+          type: Object,
+          notify: true,
+          value: function() {
+            return {};
+          }
+        },
+
+        /**
+         * The different existing bases on the ktbs.
+         *
+         * @attribute _bases
+         * @type Array
+         */
+        _bases: {
           type: Array,
           notify: true,
-          value: function(){
+          value: function() {
             return [];
           }
         },
 
-
-        tmpBase: {
+        /**
+         * A loaded base ready to be formated.
+         *
+         * @attribute _tmpBase
+         * @type Object
+         */
+        _tmpBase: {
           type: Object,
           notify: true,
-          value: null,
           observer: '_tmpBaseLoaded'
         },
 
         /**
-        * Localization object.
-        *
-        * @attribute i18n
-        * @type Object
-        */
-		    i18n: {
-            type: Object,
-            value: function(){
-              return {
-                  "title":{
-                      "default":"Pick a project",
-                      "en":"Pick a project",
-                      "fr":"Selectionnez votre projet"
-                  }
-              }
-            },
-            notify: true
-        },
-
-        /**
-        * Internationalization.
-        * fr, en.
-        *
-        * @attribute language
-        * @type String
-        */
-        language: {
-            type: String,
-            notify: true,
-            observer: "_languageChanged"
-        },
-
+         * List of the bases unloaded (raw from ktbs.get).
+         *
+         * @attribute _tmpBases
+         * @type Array
+         */
+        _tmpBases: {
+          type: Array,
+          notify: true,
+          value: []
+        }
       },
 
-
-      listeners:{
+      listeners: {
         'loadBase': '_loadBase',
       },
 
+      behaviors: [
+        Polymer.AppLocalizeBehavior
+      ],
 
-      _languageChanged: function(){
-        for(var prop in this.i18n) {
-          var tmp = "i18n."+prop+".default";
-          this.set(tmp, this.i18n[prop][this.language]);
-        }
-      },
+      ready: function() {},
 
-      ready: function(){
-
+      attached: function() {
+        this.loadResources(this.resolveUrl('./locales.json'));
       },
 
       /**
-      * Triggered when `ktbsUrl` changes.
-      * Get each base of the ktbs object.
-      *
-      * @method _ktbsUrlChanged
-      */
-      _ktbsUrlChanged: function(){
+       * Triggered when `ktbsUrl` changes.
+       * Get each base of the ktbs object.
+       *
+       * @method _ktbsUrlChanged
+       */
+      _ktbsUrlChanged: function() {
 
         // We check if ktbsUrl isn't empty ( setting ktbsUrl to "" triggers a change).
-        if( this.ktbsUrl !== "" ){
+        if (this.ktbsUrl !== "") {
 
           // We set `_ktbs` as a ktbs object.
-          this.set('_ktbs', new Samotraces.Ktbs.Ktbs( this.ktbsUrl ) );
-
-          var that = this;
+          this.set('_ktbs', new Samotraces.Ktbs.Ktbs(this.ktbsUrl));
 
           // We load the ktbs in order to retrieve the bases.
           this._ktbs.load()
-              .then( function(){
+            .then(function() {
+
+              // If we're using a central loading, we let it manage the loadings.
+              if (this.taaabsCentralLoading) {
                 that._ktbs.iter_bases()
-                          .forEach( function( base ){
+                  .forEach(function(base) {
 
-                            that.fire('GET_RESOURCE', {url:base.uri, obj:"tmpBase"});
+                    that.fire('GET_RESOURCE', {
+                      url: base.uri,
+                      obj: "_tmpBase"
+                    });
 
-                          })
-                          .then( function(){
+                  })
+                  .then(function() {})
+                  .catch(function(err) {
+                    console.log(err);
+                  })
+              }
+              // Otherwise, we load each base manually.
+              else {
+                this._ktbs.iter_bases()
+                  .forEach(function(base) {
+                    this.push('_tmpBases', new Samotraces.Ktbs.Resource(base.uri, base.uri));
+                  }.bind(this))
+                  .then(function() {
+                    // Once we've created every base, we load them.
+                    this._loadEachTemporaryBase();
+                  }.bind(this))
+                  .catch(function(err) {
+                    console.log(err);
+                  })
+              }
 
-                          })
-                          .catch( function(err){
-                            console.log(err);
-                          })
-              })
-              .catch( function(err){
-                console.log(err);
-              })
-        }
-
-      },
-
-      _tmpBaseLoaded: function(){
-        if( this.tmpBase ){
-          this.tmpBase.idName = this.tmpBase.id.split('/');
-          this.tmpBase.idName = this.tmpBase.idName[ this.tmpBase.idName.length - 2 ];
-
-          this.tmpBase.note = this.tmpBase['http://www.w3.org/2004/02/skos/core#note'];
-
-          this.push('bases', JSON.parse(JSON.stringify(this.tmpBase)) );
+            }.bind(this))
+            .catch(function(err) {
+              console.log(err);
+            })
         }
 
       },
 
       /**
-      * Triggered when a <tr> of a base is clicked.
-      * Fires `baseSelected`.
-      *
-      * @method _baseClicked
-      */
-      _baseClicked: function(e){
+       * Load each raw base.
+       *
+       * @method _loadEachTemporaryBase
+       */
+      _loadEachTemporaryBase: function() {
+        if (this._tmpBases.length > 0) {
+          var base = this._tmpBases[0];
+          base.load()
+            .then(function(base) {
+              // We set tmpBase to let `_tmpBaseLoaded` format the base.
+              this.set('_tmpBase', base);
+              // We load the others bases.
+              this.splice('_tmpBases', 0, 1);
+              this._loadEachTemporaryBase();
+            }.bind(this))
+            .catch(function(err) {
+              console.log(err);
+              // We load the others anyway.
+              this.splice('_tmpBases', 0, 1);
+              this._loadEachTemporaryBase();
+            }.bind(this));
+        } else {
+          // ???
+        }
+      },
 
-        // We get the parent <tr> element of the actual element clicked
-        var tr = e.target;
-        while(tr.localName !== 'tr')
-          tr = tr.parentNode;
-
-        var baseUrl = tr.id;
-        this.fire('baseSelected',{"baseId":baseUrl,"which":e.which});
+      /**
+       * Triggered when `_tmpBase` changes. Format the base and push it into `_bases`.
+       *
+       * @method _tmpBaseLoaded
+       */
+      _tmpBaseLoaded: function() {
+        if (this._tmpBase) {
+          this._tmpBase.idName = this._tmpBase.id.split('/');
+          this._tmpBase.idName = this._tmpBase.idName[this._tmpBase.idName.length - 2];
+          this.push('_bases', JSON.parse(JSON.stringify(this._tmpBase)));
+        }
 
       },
 
       /**
-      * Sort two elements in alphabetic order.
-      *
-      * @method _sort
-      */
+       * Triggered when a <tr> of a base is clicked.
+       * Fires `baseSelected`.
+       *
+       * @method _baseClicked
+       */
+      _baseClicked: function(e) {
+        this.fire('BASE_SELECTED', {
+          "baseId": e.model.item.uri,
+          "which": e.which
+        });
+      },
+
+      /**
+       * Sort two elements in alphabetic order.
+       *
+       * @method _sort
+       */
       _sort: function(a, b) {
         if (a.idName.toLowerCase() < b.idName.toLowerCase())
           return -1;

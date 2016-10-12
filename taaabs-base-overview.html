@@ -195,15 +195,15 @@
 
               // If we're using a central loading, we let it manage the loadings.
               if (this.taaabsCentralLoading) {
-                that._ktbs.iter_bases()
+                this._ktbs.iter_bases()
                   .forEach(function(base) {
 
-                    that.fire('GET_RESOURCE', {
+                    this.fire('GET_RESOURCE', {
                       url: base.uri,
                       obj: "_tmpBase"
                     });
 
-                  })
+                  }.bind(this))
                   .then(function() {})
                   .catch(function(err) {
                     console.log(err);

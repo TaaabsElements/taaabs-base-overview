@@ -81,7 +81,6 @@
         ktbsUrl: {
           type: String,
           notify: true,
-          observer: "_ktbsUrlChanged"
         },
 
         /**
@@ -179,9 +178,9 @@
        * Triggered when `ktbsUrl` changes.
        * Get each base of the ktbs object.
        *
-       * @method _ktbsUrlChanged
+       * @method refresh
        */
-      _ktbsUrlChanged: function() {
+      refresh: function() {
 
         // We check if ktbsUrl isn't empty ( setting ktbsUrl to "" triggers a change).
         if (this.ktbsUrl !== "") {

@@ -280,7 +280,8 @@
        */
       _baseClicked: function(e) {
         this.fire('BASE_SELECTED', {
-          "baseId": e.model.item.uri,
+          "baseId": e.model.item.idName+'/',
+          "baseUri": e.model.item.uri,
           "which": e.which
         });
       },

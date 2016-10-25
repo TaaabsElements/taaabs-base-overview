@@ -181,6 +181,8 @@
        * @method refresh
        */
       refresh: function() {
+        // Reset the bases.
+        this.set('_bases', []);
 
         // We check if ktbsUrl isn't empty ( setting ktbsUrl to "" triggers a change).
         if (this.ktbsUrl !== "") {

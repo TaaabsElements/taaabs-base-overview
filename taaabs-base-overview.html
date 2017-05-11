@@ -1,44 +1,40 @@
-<link rel="import" href="../taaabs-themes/taaabs-dark-theme.html">
+<link rel="import" href="../taaabs-themes/taaabs-theme.html">
+<link rel="import" href="../app-localize-behavior/app-localize-behavior.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
 
 <dom-module id="taaabs-base-overview">
   <template>
     <!-- include the style module by name -->
     <!-- <style include="taaabs-dark-theme"></style> -->
-    <style include="taaabs-dark-theme"></style>
+    <style include="taaabs-theme"></style>
     <style>
       :host {
         display: block;
       }
-
-      :host table td {
-        padding-top: 10px;
-        padding-bottom: 10px;
+      :host #list-div div:nth-child(2n){
+        background-color: var(--paper-grey-100);
       }
 
-      th {
-        text-align: left;
+      :host #list-div div:hover{
+        background-color: var(--paper-grey-200);
       }
     </style>
 
-    <div>
-      <table class="table" style="width:100%">
-        <thead>
-          <tr>
-            <th> [[localize('id')]] </th>
-            <th> [[localize('label')]] </th>
-            <th> [[localize('notes')]] </th>
-          </tr>
-        </thead>
-        <tbody>
-          <template is="dom-repeat" items="[[_bases]]" sort="_sort">
-            <tr on-click="_baseClicked" class="clickable">
-              <td> <span>[[item.idName]]</span> </td>
-              <td> <span>[[item.label]]</span> </td>
-              <td> <span>[[item.comment]]</span> </td>
-            </tr>
-          </template>
-        </tbody>
-      </table>
+    <div id="list-div" class="flex-vertical fit-width">
+      <template is="dom-repeat" items="[[_bases]]" sort="_sort">
+        <div class="flex-horizontal fit-width">
+          <div class="flexchild fgBlack hoverable clickable" on-click="_onOpenClick" title="[[localize('open-here', 'name', item.idName)]]">
+            <span> [[item.idName]]  </span>
+            <span> [[item.label]]   </span>
+            <span> [[item.comment]] </span>
+          </div>
+          <div style="width: 40px">
+            <iron-icon class="flexchild fgBlack fgBlackH hoverable clickable" title="[[localize('open-in-browser', 'name', item.idName)]]"
+                       icon="icons:open-in-browser" on-click="_onOpenInBrowerClick"></iron-icon>
+          </div>
+        </div>
+      </template>
     </div>
   </template>
 
@@ -68,7 +64,7 @@
        *
        * If mouse_button = 2, then it's a middle-click
        *
-       * @event BASE_SELECTED
+       * @event base-selected
        */
 
       properties: {
@@ -105,6 +101,12 @@
         language: {
           type: String,
           notify: true
+        },
+
+        loadBaseInformations: {
+          type: Boolean,
+          notify: true,
+          value: false
         },
 
         /**
@@ -157,6 +159,27 @@
           type: Array,
           notify: true,
           value: []
+        },
+
+        resources: {
+          type: Object,
+          value: function(){
+            return {
+              'en': {
+                'open-in-browser': 'Explore {name} in a new tab',
+                'open-here': 'Explore {name} here'
+              },
+              'fr': {
+                'open-in-browser': 'Explorer {name} dans un nouvel onglet',
+                'open-here': 'Explorer {name} ici'
+              }
+            }
+          }
+        },
+
+        language: {
+          type: String,
+          value: 'en'
         }
       },
 
@@ -170,9 +193,7 @@
 
       ready: function() {},
 
-      attached: function() {
-        this.loadResources(this.resolveUrl('./locales.json'));
-      },
+      attached: function() {},
 
       /**
        * Triggered when `ktbsUrl` changes.
@@ -194,37 +215,45 @@
           this._ktbs.load()
             .then(function() {
 
-              // If we're using a central loading, we let it manage the loadings.
-              if (this.taaabsCentralLoading) {
-                this._ktbs.iter_bases()
-                  .forEach(function(base) {
+              if(this.loadBaseInformations){
+                // If we're using a central loading, we let it manage the loadings.
+                if (this.taaabsCentralLoading) {
+                  this._ktbs.iter_bases()
+                    .forEach(function(base) {
 
-                    this.fire('GET_RESOURCE', {
-                      url: base.uri,
-                      obj: "_tmpBase"
-                    });
+                      this.fire('GET_RESOURCE', {
+                        url: base.uri,
+                        obj: "_tmpBase"
+                      });
 
-                  }.bind(this))
-                  .then(function() {})
-                  .catch(function(err) {
-                    console.log(err);
-                  })
+                    }.bind(this))
+                    .then(function() {})
+                    .catch(function(err) {
+                      console.log(err);
+                    })
+                }
+                // Otherwise, we load each base manually.
+                else {
+                  this._ktbs.iter_bases()
+                    .forEach(function(base) {
+                      this.push('_tmpBases', new Samotraces.Ktbs.Resource(base.uri, base.uri));
+                    }.bind(this))
+                    .then(function() {
+                      // Once we've created every base, we load them.
+                      this._loadEachTemporaryBase();
+                    }.bind(this))
+                    .catch(function(err) {
+                      console.log(err);
+                    })
+                }
               }
-              // Otherwise, we load each base manually.
-              else {
-                this._ktbs.iter_bases()
-                  .forEach(function(base) {
-                    this.push('_tmpBases', new Samotraces.Ktbs.Resource(base.uri, base.uri));
-                  }.bind(this))
-                  .then(function() {
-                    // Once we've created every base, we load them.
-                    this._loadEachTemporaryBase();
-                  }.bind(this))
-                  .catch(function(err) {
-                    console.log(err);
-                  })
+              else{
+                for(var i = 0; i < this._ktbs.bases.length; i++){
+                  this.push('_bases',{
+                    'idName': this._ktbs.bases[i].replace('/', '')
+                  });
+                }
               }
-
             }.bind(this))
             .catch(function(err) {
               console.log(err);
@@ -280,11 +309,19 @@
        *
        * @method _baseClicked
        */
-      _baseClicked: function(e) {
-        this.fire('BASE_SELECTED', {
+      _onOpenClick: function(e) {
+        this.fire('base-selected', {
           "baseId": e.model.item.idName+'/',
           "baseUri": e.model.item.uri,
-          "which": e.which
+          "where": "here"
+        });
+      },
+
+      _onOpenInBrowerClick: function(e) {
+        this.fire('base-selected', {
+          "baseId": e.model.item.idName+'/',
+          "baseUri": e.model.item.uri,
+          "where": "new"
         });
       },
 

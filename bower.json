@@ -1,7 +1,7 @@
 {
   "name": "taaabs-base-overview",
   "version": "1.0.0",
-  "description": "A graphical element that simplify file reading.",
+  "description": "A graphical element that displays the list of subbase of a base or a ktbs root.",
   "keywords": [
     "web-components",
     "polymer",
@@ -17,7 +17,7 @@
   "main": "taaabs-base-overview.html",
   "license": "https://github.com/TaaabsElements/taaabs-base-overview/LICENSE",
   "dependencies": {
-    "polymer": "polymer/polymer"
+    "polymer": "Polymer/polymer#<2.*"
   },
   "devDependencies": {
     "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
